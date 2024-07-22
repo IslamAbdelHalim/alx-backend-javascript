@@ -1,4 +1,5 @@
-function displayMessage(message){
+#!/usr/bin/node
+function displayMessage(message) {
   console.log(message);
 }
 
