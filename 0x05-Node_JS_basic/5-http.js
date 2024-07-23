@@ -1,29 +1,46 @@
-const fs = require('fs');
+const http = require('http');
+const countStudents = require('./3-read_file_async');
 
-function countStudents(path) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf-8', (err, data) => {
-      if (data) {
-        const students = data.split('\n').slice(1, -1);
-        const studentCs = [];
-        const studentSwe = [];
-
-        for (const student of students) {
-          if (student.includes('CS')) {
-            studentCs.push(student.split(',', 1)[0]);
-          } else if (student.includes('SWE')) {
-            studentSwe.push(student.split(',', 1)[0]);
-          }
-        }
-        console.log(`Number of students: ${students.length}`);
-        console.log(`Number of students in CS: ${studentCs.length}. List: ${studentCs.join(', ')}`);
-        console.log(`Number of students in SWE: ${studentSwe.length}. List: ${studentSwe.join(', ')}`);
-        resolve(studentCs);
-      } else {
-        reject(reject(new Error('Cannot load the database')));
-      }
-    });
-  });
+function homeHandeler(req, res) {
+  res.end('Hello Holberton School!');
 }
 
-module.exports = countStudents;
+function studentsHandeler(req, res) {
+  res.write('This is the list of our students\n');
+  countStudents(process.argv[2])
+    .then(({ fields, NumberOfStudents }) => {
+      res.write(`Number of students: ${NumberOfStudents}\n`);
+      let cnt = 0;
+      for (const [field, students] of Object.entries(fields)) {
+        res.write(`Number of students in ${field}: ${students.length}. List: ${students.join(', ')}`);
+        if (cnt !== Object.keys(fields).length - 1) res.write('\n');
+        cnt += 1;
+      }
+      res.end();
+    })
+    .catch((err) => {
+      res.write(err.message);
+      res.end();
+    });
+}
+
+const port = 1245;
+const host = 'localhost';
+const routes = {
+  '/': homeHandeler,
+  '/students': studentsHandeler,
+};
+
+const app = (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+
+  const { url } = req;
+  if (routes[url]) routes[url](req, res);
+};
+
+const server = http.createServer(app);
+server.listen(port, host, () => {
+  console.log(`Server is running on http://${host}:${port}`);
+});
+
+module.exports = app;
