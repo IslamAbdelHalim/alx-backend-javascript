@@ -13,9 +13,4 @@ function calculateNumber(type, a, b) {
   return operation[type](a, b);
 }
 
-console.log(calculateNumber('SUM', 1.4, 4.5))
-console.log(calculateNumber('SUBTRACT', 1.4, 4.5))
-console.log(calculateNumber('DIVIDE', 1.4, 4.5))
-console.log(calculateNumber('DIVIDE', 1.4, 0))
-
 module.exports = calculateNumber;
